@@ -357,8 +357,7 @@ public:
     }
     void add(const Polygons& other)
     {
-        for(unsigned int n=0; n<other.paths.size(); n++)
-            paths.push_back(other.paths[n]);
+      paths.insert(paths.end(), other.paths.begin(), other.paths.end());
     }
     PolygonRef newPoly()
     {

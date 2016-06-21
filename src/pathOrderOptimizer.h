@@ -36,8 +36,7 @@ public:
 
     void addPolygons(Polygons& polygons)
     {
-        for(unsigned int i=0;i<polygons.size(); i++)
-            this->polygons.push_back(polygons[i]);
+      this->polygons.insert(this->polygons.end(), polygons.begin(), polygons.end());
     }
 
     void optimize(); //!< sets #polyStart and #polyOrder
