@@ -26,7 +26,7 @@
 namespace cura
 {
 
-    
+
 bool FffPolygonGenerator::generateAreas(SliceDataStorage& storage, MeshGroup* meshgroup, TimeKeeper& timeKeeper)
 {
     if (!sliceModel(meshgroup, timeKeeper, storage)) 
@@ -37,6 +37,22 @@ bool FffPolygonGenerator::generateAreas(SliceDataStorage& storage, MeshGroup* me
     slices2polygons(storage, timeKeeper);
     
     return true;
+}
+
+unsigned int FffPolygonGenerator::getDraftShieldHeight(const unsigned int total_layers) const
+{
+    if (!getSettingBoolean("draft_shield_enabled"))
+    {
+        return 0;
+    }
+    switch (getSettingAsDraftShieldHeightLimitation("draft_shield_height_limitation"))
+    {
+        default:
+        case DraftShieldHeightLimitation::FULL:
+            return total_layers;
+        case DraftShieldHeightLimitation::LIMITED:
+            return getSettingInMicrons("draft_shield_height");
+    }
 }
 
 bool FffPolygonGenerator::sliceModel(MeshGroup* meshgroup, TimeKeeper& timeKeeper, SliceDataStorage& storage) /// slices the model
@@ -232,7 +248,8 @@ void FffPolygonGenerator::slices2polygons(SliceDataStorage& storage, TimeKeeper&
         for (unsigned int layer_idx = 0; layer_idx < total_layers; layer_idx++)
         {
             Polygons& support = storage.support.supportLayers[layer_idx].supportAreas;
-            CommandSocket::sendPolygons(PrintFeatureType::Infill, support, 100); //getSettingInMicrons("support_line_width"));
+            ExtruderTrain* infill_extr = storage.meshgroup->getExtruderTrain(storage.getSettingAsIndex("support_infill_extruder_nr"));
+            CommandSocket::sendPolygons(PrintFeatureType::Infill, support, 100); // infill_extr->getSettingInMicrons("support_line_width"));
         }
     }
     */
@@ -530,26 +547,24 @@ void FffPolygonGenerator::processOozeShield(SliceDataStorage& storage, unsigned 
 
 void FffPolygonGenerator::processDraftShield(SliceDataStorage& storage, unsigned int total_layers)
 {
-    int draft_shield_height = getSettingInMicrons("draft_shield_height");
-    int draft_shield_dist = getSettingInMicrons("draft_shield_dist");
-    int layer_height_0 = getSettingInMicrons("layer_height_0");
-    int layer_height = getSettingInMicrons("layer_height");
-    
-    if (draft_shield_height < layer_height_0)
+    const int draft_shield_layers = getDraftShieldHeight(total_layers);
+    if (draft_shield_layers <= 0)
     {
         return;
     }
-    
-    unsigned int max_screen_layer = (draft_shield_height - layer_height_0) / layer_height + 1;
-    
-    int layer_skip = 500 / layer_height + 1;
-    
+    const int layer_height_0 = getSettingInMicrons("layer_height_0");
+    const int layer_height = getSettingInMicrons("layer_height");
+
+    const unsigned int max_screen_layer = (draft_shield_layers - layer_height_0) / layer_height + 1;
+    const unsigned int layer_skip = 500 / layer_height + 1;
+
     Polygons& draft_shield = storage.draft_protection_shield;
     for (unsigned int layer_nr = 0; layer_nr < total_layers && layer_nr < max_screen_layer; layer_nr += layer_skip)
     {
         draft_shield = draft_shield.unionPolygons(storage.getLayerOutlines(layer_nr, true));
     }
-    
+
+    const int draft_shield_dist = getSettingInMicrons("draft_shield_dist");
     storage.draft_protection_shield = draft_shield.approxConvexHull(draft_shield_dist);
 }
 
@@ -559,8 +574,9 @@ void FffPolygonGenerator::processPlatformAdhesion(SliceDataStorage& storage)
     switch(getSettingAsPlatformAdhesion("adhesion_type"))
     {
     case EPlatformAdhesion::SKIRT:
-        if (train->getSettingInMicrons("draft_shield_height") == 0)
-        { // draft screen replaces skirt
+        if (!getSettingBoolean("draft_shield_enabled")
+            || (getSettingAsDraftShieldHeightLimitation("draft_shield_height_limitation") == DraftShieldHeightLimitation::LIMITED && getSettingInMicrons("draft_shield_height") == 0)) //Draft shield replaces skirt.
+        {
             generateSkirtBrim(storage, train->getSettingInMicrons("skirt_gap"), train->getSettingAsCount("skirt_line_count"), train->getSettingInMicrons("skirt_brim_minimal_length"));
         }
         break;
