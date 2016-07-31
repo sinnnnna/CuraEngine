@@ -95,6 +95,13 @@ std::string SettingsBase::getSettingString(std::string key) const
     {
         return setting_values.at(key);
     }
+    if (key == std::string("support_xy_distance"))
+    {
+        for (auto kv : setting_inherit_base)
+            std::cerr << kv.first << " : " << kv.second->getSettingString("support_xy_distance") << "\n";
+        std::cerr << "sdgsggsd\n";
+        this;
+    }
     if (setting_inherit_base.find(key) != setting_inherit_base.end())
     {
         return setting_inherit_base.at(key)->getSettingString(key);

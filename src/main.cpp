@@ -255,7 +255,12 @@ void slice(int argc, char **argv)
         SettingRegistry::getInstance()->loadExtruderJSONsettings(extruder_train_nr, train);
     }
     
-    
+    for (Mesh& mesh : meshgroup->meshes)
+    {
+        mesh.setSettingInheritBase("support_xy_distance", *meshgroup->getExtruderTrain(1));
+        
+        std::cerr << mesh.getSettingInMicrons("support_xy_distance") <<  "sdgsggsd\n";
+    }
 #ifndef DEBUG
     try {
 #endif
