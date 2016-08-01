@@ -101,7 +101,9 @@ set(engine_SRCS # Except main.cpp.
     src/utils/Date.cpp
     src/utils/gettime.cpp
     src/utils/LinearAlg2D.cpp
+    src/utils/ListPolyIt.cpp
     src/utils/logoutput.cpp
+    src/utils/PolygonProximityLinker.cpp
     src/utils/polygonUtils.cpp
     src/utils/polygon.cpp
 )
