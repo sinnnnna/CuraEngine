@@ -48,6 +48,7 @@ std::pair<PolygonProximityLinker::Point2Link::iterator, PolygonProximityLinker::
     std::pair<Point2Link::iterator, Point2Link::iterator> from_link_pair = point_to_link.equal_range(from);
 #ifdef DEBUG
     for (Point2Link::iterator it = from_link_pair.first; it != from_link_pair.second; ++it)
+    {
         if (!(it->second.a.p() == from || it->second.b.p() == from))
         {
             std::cerr << " ERROR!\n" << it->first << " == " << from << "\n";
@@ -58,13 +59,18 @@ std::pair<PolygonProximityLinker::Point2Link::iterator, PolygonProximityLinker::
             
             std::cerr << "\n all links:\n";
             for (std::pair<const Point, const ProximityPointLink> pair : point_to_link)
+            {
                 std::cerr << pair.first << " : " << pair.second.a.p() << "-" <<pair.second.b.p() << "\n";
+            }
             
             std::cerr << "\n link set \n";
             for (const ProximityPointLink link : proximity_point_links)
+            {
                 std::cerr << link.a.p() << "-" << link.b.p() << " hashes as " << std::hash<ProximityPointLink>()(link) << "\n";
+            }
             assert(false && "some point got mapped to a link which doesn't have the point as one of the end points!");
         }
+    }
 #endif
     return from_link_pair;
 }
@@ -168,7 +174,7 @@ void PolygonProximityLinker::findProximatePoints(const ListPolyIt a_from_it, Lis
     {
         return;
     }
-    if (a_from_it.prev() == b_to_it) // a is connected to a line segment directly connected to a the line segment [b]
+    if (a_from_it.prev() == b_to_it) // [a] is connected to a line segment directly connected to the line segment [b]
     {
         // only check whether we need to link points; don't project
         int64_t dist2 = vSize2(b_from - a_from);
@@ -179,7 +185,7 @@ void PolygonProximityLinker::findProximatePoints(const ListPolyIt a_from_it, Lis
         }
         return;
     }
-    if (a_from_it.next() == b_from_it) // a is connected to a line segment directly connected to a the line segment [b]
+    if (a_from_it.next() == b_from_it) // [a] is connected to a line segment directly connected to the line segment [b]
     {
         // only check whether we need to link points; don't project
         int64_t dist2 = vSize2(b_to - a_from);

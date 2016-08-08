@@ -33,7 +33,7 @@ public:
      * \param[in] elem_reserve Number of elements to research space for.
      * \param[in] max_load_factor Maximum average load factor before rehashing.
      */
-    SparseLineGrid(coord_t cell_size, size_t elem_reserve=0U, float max_load_factor=1.0f);
+    SparseLineGrid(coord_t cell_size, size_t elem_reserve = 0U, float max_load_factor = 1.0f);
 
     /*! \brief Inserts elem into the sparse grid.
      *
@@ -101,7 +101,7 @@ void SGI_THIS::insert(const Elem &elem)
         for (grid_coord_t cell_x = x_cell_start; cell_x <= x_cell_end; ++cell_x)
         {
             GridPoint grid_loc(cell_x, cell_y);
-            SparseGrid<ElemT>::m_grid.emplace(grid_loc,elem);
+            SparseGrid<ElemT>::m_grid.emplace(grid_loc, elem);
             if (grid_loc == end_cell)
             {
                 return;
